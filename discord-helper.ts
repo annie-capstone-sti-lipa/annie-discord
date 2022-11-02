@@ -27,6 +27,22 @@ class DiscordHelper {
     }
   }
 
+  saveDiscordId(message: Message) {
+    let userId = message.content.split(" ")[1];
+    fireBaseHelper
+      .saveUserDiscordId(message.author.id, userId)
+      .then((response) => {
+        if (response.success) {
+          this.sendReply(message, response.message);
+        } else {
+          this.sendReply(
+            message,
+            "Sorry but I don't recognize that command. Please make sure to copy and paste the exact command provided by https://client-annie.me"
+          );
+        }
+      });
+  }
+
   constructor(token: string) {
     this.client.on("ready", async () => {
       console.log(this.client.user?.id);
@@ -36,19 +52,7 @@ class DiscordHelper {
     this.client.on("messageCreate", (message) => {
       if (this.client.user?.id !== message.author.id) {
         if (message.content.includes(".register")) {
-          let userId = message.content.split(" ")[1];
-          fireBaseHelper
-            .saveUserDiscordId(message.author.id, userId)
-            .then((response) => {
-              if (response.success) {
-                this.sendReply(message, response.message);
-              } else {
-                this.sendReply(
-                  message,
-                  "Sorry but I don't recognize that command. Please make sure to copy and paste the exact command provided by https://client-annie.me"
-                );
-              }
-            });
+          this.saveDiscordId(message);
         } else {
           this.sendReply(message, "hello");
         }
