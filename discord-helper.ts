@@ -45,16 +45,19 @@ class DiscordHelper {
 
   constructor(token: string) {
     this.client.on("ready", async () => {
-      console.log(this.client.user?.id);
       console.log(`Logged in as ${this.client.user!.tag}!`);
     });
 
     this.client.on("messageCreate", (message) => {
-      if (this.client.user?.id !== message.author.id) {
-        if (message.content.includes(".register")) {
-          this.saveDiscordId(message);
-        } else {
-          this.sendReply(message, "hello");
+      let isDM = message.channel instanceof DMChannel;
+
+      if (isDM || message.content.includes(`<@${this.client.user!.id}>`)) {
+        if (this.client.user?.id !== message.author.id) {
+          if (message.content.includes(".register")) {
+            this.saveDiscordId(message);
+          } else {
+            this.sendReply(message, "hello");
+          }
         }
       }
     });
