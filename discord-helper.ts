@@ -1,4 +1,11 @@
-import { Client, GatewayIntentBits, Partials, DMChannel } from "discord.js";
+import {
+  Client,
+  GatewayIntentBits,
+  Partials,
+  DMChannel,
+  Message,
+} from "discord.js";
+import { fireBaseHelper } from ".";
 
 class DiscordHelper {
   client = new Client({
@@ -11,19 +18,39 @@ class DiscordHelper {
     partials: [Partials.Message, Partials.Channel],
   });
 
+  sendReply(message: Message, reply: string) {
+    let isDM = message.channel instanceof DMChannel;
+    if (isDM) {
+      message.author.send(reply);
+    } else {
+      message.channel.send(reply);
+    }
+  }
+
   constructor(token: string) {
     this.client.on("ready", async () => {
+      console.log(this.client.user?.id);
       console.log(`Logged in as ${this.client.user!.tag}!`);
     });
 
     this.client.on("messageCreate", (message) => {
       if (this.client.user?.id !== message.author.id) {
-        let isDM = message.channel instanceof DMChannel;
-
-        if (isDM) {
-          message.author.send("heloo");
+        if (message.content.includes(".register")) {
+          let userId = message.content.split(" ")[1];
+          fireBaseHelper
+            .saveUserDiscordId(message.author.id, userId)
+            .then((response) => {
+              if (response.success) {
+                this.sendReply(message, response.message);
+              } else {
+                this.sendReply(
+                  message,
+                  "Sorry but I don't recognize that command. Please make sure to copy and paste the exact command provided by https://client-annie.me"
+                );
+              }
+            });
         } else {
-          message.channel.send("heloo from channel");
+          this.sendReply(message, "hello");
         }
       }
     });
