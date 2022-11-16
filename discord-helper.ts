@@ -55,8 +55,6 @@ class DiscordHelper {
         if (this.client.user?.id !== message.author.id) {
           if (message.content.includes(".register")) {
             this.saveDiscordId(message);
-          } else {
-            this.sendReply(message, "hello");
           }
         }
       }
