@@ -28,19 +28,27 @@ class DiscordHelper {
   }
 
   saveDiscordId(message: Message) {
-    let userId = message.content.split(" ")[1];
-    fireBaseHelper
-      .saveUserDiscordId(message.author.id, userId)
-      .then((response) => {
-        if (response.success) {
-          this.sendReply(message, response.message);
-        } else {
-          this.sendReply(
-            message,
-            "Sorry but I don't recognize that command. Please make sure to copy and paste the exact command provided by https://client-annie.me"
-          );
-        }
-      });
+    let userId = message.content.split(" ")[1] ?? "none";
+
+    if (userId === "none") {
+      this.sendReply(
+        message,
+        "Sorry but I don't recognize that registration code. Please make sure to copy and paste the exact command provided by https://client-annie.me"
+      );
+    } else {
+      fireBaseHelper
+        .saveUserDiscordId(message.author.id, userId)
+        .then((response) => {
+          if (response.success) {
+            this.sendReply(message, response.message);
+          } else {
+            this.sendReply(
+              message,
+              "Sorry but I don't recognize that command. Please make sure to copy and paste the exact command provided by https://client-annie.me"
+            );
+          }
+        });
+    }
   }
 
   constructor(token: string) {
@@ -51,11 +59,18 @@ class DiscordHelper {
     this.client.on("messageCreate", (message) => {
       let isDM = message.channel instanceof DMChannel;
 
-      if (isDM || message.content.includes(`<@${this.client.user!.id}>`)) {
+      if (isDM) {
         if (this.client.user?.id !== message.author.id) {
           if (message.content.includes(".register")) {
             this.saveDiscordId(message);
           }
+        }
+      } else {
+        if (message.content.includes(".register")) {
+          message.reply("I've sent you a DM.");
+          message.author.send(
+            "Hello, please send your registration command you got from https://client-annie.me here."
+          );
         }
       }
     });
