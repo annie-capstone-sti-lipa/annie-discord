@@ -30,7 +30,7 @@ class DiscordHelper {
   saveDiscordId(message: Message) {
     let userId = message.content.split(" ")[1] ?? "none";
 
-    if (userId === "none") {
+    if (userId === "none" || userId.length < 28) {
       this.sendReply(
         message,
         "Sorry but I don't recognize that registration code. Please make sure to copy and paste the exact command provided by https://client-annie.me"
